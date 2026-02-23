@@ -1,0 +1,55 @@
+# Questo file definisce il dataset personalizzato per renderlo compatibile con pytorch.
+# Per la creazione del nostro dataset finale, sono presenti 3 cartelle di immagini e un file .csv
+# che collega le immagini alle etichette (il dataset non è incluso in questo zip).
+
+import os
+import cv2
+import pandas as pd
+import numpy as np
+import torch
+from torch.utils.data import Dataset
+from torchvision import transforms
+
+
+class CardDataset(Dataset):
+    def __init__(self, dataset_path, csv_file_path: str, transform: transforms) -> None:
+
+        # Carico il csv usando pandas
+        self.dataset_path= dataset_path
+        self.csv_data = pd.read_csv(csv_file_path)
+        self.transforms = transform
+
+        # Definisco le classi per seme e numeri
+        self.classi_seme: tuple= ("cuori", "quadri", "fiori", "picche")
+        self.classi_numero: tuple= ('A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K')
+
+        # Converto le etichette testuali in indici numerici usabili dalla rete neurale
+        self.seme_to_idx = {cls: idx for idx, cls in enumerate(self.classi_seme)}
+        self.numero_to_idx = {cls: idx for idx, cls in enumerate(self.classi_numero)}
+
+    def __len__(self) -> int:
+        return len(self.csv_data)
+
+    def __getitem__(self, idx) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        riga = self.csv_data.iloc[idx]
+        
+        image_path = os.path.join(self.dataset_path, str(riga['image_path']))
+        seme = self.seme_to_idx[riga["seme"]]
+        numero = self.numero_to_idx[riga["numero"]]
+
+        image = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_COLOR)
+
+        if image is None:
+            raise FileNotFoundError(f"{image_path} not found")
+
+        if self.transforms:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            out_img = self.transforms(image)
+        else:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image = cv2.resize(image, (240, 180))
+            image = image.astype(np.float32) / 255.0
+            image = np.transpose(image, (2, 0, 1))
+            out_img = torch.tensor(image, dtype=torch.float32)
+
+        return out_img, torch.tensor(seme, dtype=torch.long), torch.tensor(numero, dtype=torch.long)
