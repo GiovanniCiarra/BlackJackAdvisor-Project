@@ -26,5 +26,5 @@ The pipeline consists of four main stages:
 ## 📁 Project Documentation
 For a detailed explanation of the neural network architecture, training process, and performance metrics, please refer to the following documents:
 
-* [**Full Technical Report (PDF)**](./REPORT_&_PPT/Blackjack\Advisor.pdf)
-* [**Project Presentation (PPT)**](./REPORT_&_PPT/BlackJackAdvisorPP.pdf)
+* [**Full Technical Report (PDF)**](./REPORT_&_PPT/Blackjack%20Advisor.pdf)
+* [**Project Presentation (PDF)**](./REPORT_&_PPT/BlackJackAdvisorPP.pdf)
